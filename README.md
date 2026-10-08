@@ -36,7 +36,7 @@ Every file in ANEW connects to one of these channels — plus one more thing pro
 | Layer | What | Ages with |
 |---|---|---|
 | **Core** (`docs/`, `specs/`, `workflows/`, `prompts/`, `scripts/`, `AGENTS.md`) | The system: context, specs, ADRs, roles, gates, verification, recovery. 100% tool- and stack-agnostic. | Engineering practice (slowly) |
-| **Adapters** (`adapters/`) | Thin per-tool wiring: Claude Code, GitHub Copilot, Cursor, generic. Pointers + tool-specific extras only — rules are never duplicated here. | AI tools (they change; core doesn't) |
+| **Adapters** (`adapters/`) | Thin per-tool wiring: Claude Code, GitHub Copilot, Cursor, OpenCode, generic. Pointers + tool-specific extras only — rules are never duplicated here. | AI tools (they change; core doesn't) |
 | **Packs** (roadmap) | Optional stack presets (JVM/Spring, Node, Python, React): conventions/testing/CI suggestions. Not in v1 — the core works without them. | Ecosystems |
 
 ## Quickstart
@@ -46,7 +46,7 @@ Every file in ANEW connects to one of these channels — plus one more thing pro
 ./scripts/init claude-code        # or: github-copilot | cursor | opencode | generic
 
 # 2. Open your AI tool and run the bootstrap workflow
-#    Claude Code / Cursor / Copilot:  /bootstrap
+#    Claude Code / Cursor / Copilot / OpenCode:  /bootstrap
 #    Other tools:  paste prompts/bootstrap.md
 
 # 3. The AI first asks two things: interview language and document language (recorded in
@@ -55,7 +55,7 @@ Every file in ANEW connects to one of these channels — plus one more thing pro
 
 ./scripts/doctor                  # 4. Confirm the workspace is healthy
 
-# 5. Start your first feature (Claude Code, Cursor and Copilot share the same commands)
+# 5. Start your first feature (Claude Code, Cursor, Copilot and OpenCode share the same commands)
 #    lite mode:     /new-feature "short description"    # chains the segments, asks at each gate
 #    strict mode:   /analyze "short description"        # one segment per role, one role per session
 #    existing behavior must change:  /change "<request> <work item>"
@@ -93,10 +93,10 @@ Each stage is a *segment* with an entry condition and a handoff written to files
 | `/review <NNNN>` | Independent review — read-only where the tool supports it (see "How strongly is each rule held?") | Findings report → human triage |
 | `/verify <NNNN>` | QA: criterion ↔ evidence table | Table → human ship |
 | `/change "<request> <work item>"` | Change an existing behavior: triage rubric (bug → `/fix-bug` · trivial → one commit per `docs/git.md` policy · change → mini-spec lane), then the lane by mode (`workflows/change-request.md`) | Triage verdict; then the lane's gates |
-| `/bootstrap` · `/fix-bug` · `/refactor` · `/adr` · `/recover` | Other workflows — same commands in Claude Code, Cursor and Copilot; any other tool pastes the prompts | Their gates |
+| `/bootstrap` · `/fix-bug` · `/refactor` · `/adr` · `/recover` | Other workflows — same commands in Claude Code, Cursor, Copilot and OpenCode; any other tool pastes the prompts | Their gates |
 
-Claude Code and Cursor expose these as slash commands, GitHub Copilot as prompt files, and any
-other tool by pasting the prompts (`adapters/generic/README.md`). CI runs `scripts/doctor --strict`,
+Claude Code, Cursor and OpenCode expose these as slash commands, GitHub Copilot as prompt files,
+and any other tool by pasting the prompts (`adapters/generic/README.md`). CI runs `scripts/doctor --strict`,
 so the spec/plan gates hold whichever tool produced the PR.
 
 ### Two operating modes
