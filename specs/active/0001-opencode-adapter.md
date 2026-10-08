@@ -24,8 +24,8 @@ denies).
 - [ ] CB-4 — edits under `specs/done/`, force-push/`-f`, hard reset, rebase and `rm -rf` are
   denied by configuration (no hook, no script).
 - [ ] CB-5 — role segment commands pin their agent (`/analyze` → analyst, `/plan` and `/build` →
-  developer, `/verify` → qa) and the per-agent permission lists enforce the role cards'
-  "MAY NOT" clauses.
+  developer, `/verify` → qa); path-level edit limits enforce the role cards where expressible
+  (analyst → `specs/active/`, qa → `tests/`); content-level clauses stay Documented.
 
 ## Preserved behavior
 - [ ] PB-1 — `./scripts/init claude-code|github-copilot|cursor|generic` file sets and behavior

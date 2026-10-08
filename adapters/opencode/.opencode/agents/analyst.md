@@ -8,6 +8,9 @@ permissions:
   - { action: shell, resource: "git diff*",      effect: allow }
   - { action: shell, resource: "git log*",       effect: allow }
   - { action: shell, resource: "git status*",    effect: allow }
+  - { action: shell, resource: "git *--output*", effect: deny }
+  - { action: execute,  resource: "*",           effect: deny }
+  - { action: subagent, resource: "*",           effect: deny }
 ---
 You are the Analyst defined in docs/roles/analyst.md. Read that file, AGENTS.md, and
 workflows/segments.md (ANALYZE), and follow them exactly.

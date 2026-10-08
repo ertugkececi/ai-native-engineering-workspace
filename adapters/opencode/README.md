@@ -22,21 +22,27 @@ What it adds on top of the core:
   `workflows/` and `prompts/`, they don't restate them.
 - **Read-only reviewer subagent** (`.opencode/agents/reviewer.md`): the "producer never verifies
   its own work" rule at the tool level. `edit` is denied outright; `shell` is narrowed to
-  `./scripts/check` plus read-only git inspection (`git diff`, `git log`, `git status`). This is
-  *Enforced* by permissions, not by instruction — narrower than the Claude Code reviewer, which
-  keeps full Bash with an instruction never to write.
+  `./scripts/check` plus read-only git inspection (`git diff`, `git log`, `git status`). Write
+  flags (`git diff --output`), web tools and the subagent tool are denied too — the reviewer
+  cannot fetch, spawn, or write. Projects that add MCP tools should deny their `server_*`
+  actions here as well. This is *Enforced* by permissions, not by instruction — narrower than
+  the Claude Code reviewer, which keeps full Bash with an instruction never to write.
 - **Role agents** (`.opencode/agents/`): `analyst`, `developer` and `qa`, alongside the read-only
   `reviewer`. The single-role segment commands pin their agent (`/analyze` → analyst, `/plan` and
-  `/build` → developer, `/verify` → qa), so a role card's "MAY NOT" clauses are enforced by
+  `/build` → developer, `/verify` → qa), so the path-level "MAY NOT" clauses are enforced by
   permissions: the Analyst cannot edit outside `specs/active/`, QA cannot edit outside `tests/`
-  (adjust the path for your stack). The chainers (`/new-feature`, `/change`) intentionally run
-  unpinned — they cross roles and must not inherit one role's limits.
+  (adjust the path for your stack). Content-level clauses (no weakened tests, no softened
+  criteria) stay Documented — no path rule can express them. The chainers (`/new-feature`,
+  `/change`) intentionally run unpinned — they cross roles and must not inherit one role's limits.
 - **Ask profile** (`.opencode/opencode.json`): any shell command outside a narrow allowlist
   (read-only git, `./scripts/check`, `./scripts/doctor`) asks the human first; approvals can be
   saved per project. Too loud for solo lite work? Delete the `ask` rule and the allowlist —
   the denies above stay.
-- **Permission denies** (`.opencode/opencode.json`): `git push --force`, `git push -f`,
-  `git reset --hard`, `git rebase` and `rm -rf` are blocked by the tool, not by politeness.
+- **Permission denies** (`.opencode/opencode.json`): `git push --force` (including `-f` and
+  non-leading spellings such as `git push origin main --force`), `git reset --hard`,
+  `git rebase`, and `rm -rf` (plus `-fr` / `-r -f` / `/bin/rm` variants) are blocked by the
+  tool, not by politeness — an unusual spelling falls to the ask profile, a human gate, not a
+  silent pass.
 - **Immutability without a hook**: edits to `specs/done/` are rejected by a permission rule
   (`edit` on `specs/done/*` → deny) — the same guarantee as Claude Code's hook, with no script
   and no `chmod`. Shell writes through an unrecognized command are not caught — the CI gate
