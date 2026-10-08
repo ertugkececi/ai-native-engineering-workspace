@@ -13,6 +13,7 @@ the core and point at it.
 | `claude-code/` | Pointer `CLAUDE.md` + segment commands (`/analyze` … `/verify`) + `/new-feature` chainer + other workflow commands + read-only `reviewer` subagent + permission denies + a hook that rejects editor-tool edits under `specs/done/` (CI validates the rest). Deepest integration. |
 | `github-copilot/` | Pointer `copilot-instructions.md` + every command as a prompt file (segments, `/new-feature`, `/change`, bootstrap, fix-bug, refactor, adr, recover) + read-only `reviewer` custom agent + an immutability instruction for `specs/done/`. |
 | `cursor/` | Pointer rule file + every command (`.cursor/commands/`) + an immutability rule for `specs/done/`. Review runs in a fresh chat. |
+| `opencode/` | No pointer file — OpenCode auto-loads `AGENTS.md` natively. Segment commands + `/new-feature` chainer + other workflow commands + read-only `reviewer` subagent (edit denied, shell narrowed) + permission denies + config-enforced `specs/done/` immutability (no hook). |
 | `generic/` | Instructions for wiring any other agent, incl. a paste-by-hand table for the segments. |
 
 All adapters expose the same five segments, `/change` for change requests, and the same chainer rule from `workflows/segments.md`

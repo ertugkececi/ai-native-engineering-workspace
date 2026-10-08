@@ -43,7 +43,7 @@ Every file in ANEW connects to one of these channels — plus one more thing pro
 
 ```bash
 # 1. Use this template on GitHub (or copy the files into an existing repo), then:
-./scripts/init claude-code        # or: github-copilot | cursor | generic
+./scripts/init claude-code        # or: github-copilot | cursor | opencode | generic
 
 # 2. Open your AI tool and run the bootstrap workflow
 #    Claude Code / Cursor / Copilot:  /bootstrap

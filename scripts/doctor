@@ -76,10 +76,10 @@ else
 fi
 
 # --- adapter presence ---
-if [ -f "$ROOT/CLAUDE.md" ] || [ -f "$ROOT/.github/copilot-instructions.md" ] || [ -d "$ROOT/.cursor/rules" ]; then
+if [ -f "$ROOT/CLAUDE.md" ] || [ -f "$ROOT/.github/copilot-instructions.md" ] || [ -d "$ROOT/.cursor/rules" ] || [ -d "$ROOT/.opencode/commands" ]; then
   ok "an AI tool adapter is installed"
 else
-  warn "no adapter installed — run ./scripts/init <claude-code|github-copilot|cursor|generic>"
+  warn "no adapter installed — run ./scripts/init <claude-code|github-copilot|cursor|opencode|generic>"
 fi
 
 # --- spec/plan consistency (state machine: Draft -> Approved -> In progress -> Shipped) ---
