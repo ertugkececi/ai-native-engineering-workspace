@@ -138,8 +138,11 @@ Documented rule; CI is what makes it Validated.
 \* OpenCode matches shell commands by command text; a write hidden inside a command the scanner
 does not recognize is not caught — the CI gate (`scripts/doctor --strict`) and review are the
 backstop, the same caveat as Claude Code's hook. Deny patterns cover the common spellings; an
-unusual form falls through to the human `ask`, it does not pass silently. The role agents' edit
-paths (`specs/active/`, `tests/`) are defaults; adjust them to your stack at bootstrap.
+unusual form falls through to the human `ask`, it does not pass silently. Compound commands are
+checked part by part (`git status ; git push --force` is rejected), and commands containing shell
+operators (`>`, `;`, `&&`, `|`, backticks, `$(`) go to the human ask; the role agents deny them
+outright. The role agents' edit paths (`specs/active/`, `tests/`) are defaults; adjust them to
+your stack at bootstrap.
 
 "Who approved" is Documented because a line in a file cannot prove identity. The real fix lives
 in the hosting platform, not in this repo: in strict mode, protect the default branch and require

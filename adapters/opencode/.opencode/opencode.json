@@ -5,6 +5,7 @@
     { "action": "shell", "resource": "git push --force*", "effect": "deny" },
     { "action": "shell", "resource": "git push -f*", "effect": "deny" },
     { "action": "shell", "resource": "git push *--force*", "effect": "deny" },
+    { "action": "shell", "resource": "git push * -f*", "effect": "deny" },
     { "action": "shell", "resource": "git reset --hard*", "effect": "deny" },
     { "action": "shell", "resource": "git reset *--hard*", "effect": "deny" },
     { "action": "shell", "resource": "git rebase*", "effect": "deny" },
@@ -17,8 +18,17 @@
     { "action": "shell", "resource": "git status*", "effect": "allow" },
     { "action": "shell", "resource": "git diff*", "effect": "allow" },
     { "action": "shell", "resource": "git log*", "effect": "allow" },
+    { "action": "shell", "resource": "git show*", "effect": "allow" },
+    { "action": "shell", "resource": "git *--output*", "effect": "deny" },
     { "action": "shell", "resource": "./scripts/check*", "effect": "allow" },
     { "action": "shell", "resource": "./scripts/doctor*", "effect": "allow" },
+    { "action": "shell", "resource": "*>*", "effect": "ask" },
+    { "action": "shell", "resource": "*;*", "effect": "ask" },
+    { "action": "shell", "resource": "*&&*", "effect": "ask" },
+    { "action": "shell", "resource": "*||*", "effect": "ask" },
+    { "action": "shell", "resource": "*|*", "effect": "ask" },
+    { "action": "shell", "resource": "*`*", "effect": "ask" },
+    { "action": "shell", "resource": "*$(*", "effect": "ask" },
     { "action": "edit", "resource": "specs/done/*", "effect": "deny" }
   ]
 }

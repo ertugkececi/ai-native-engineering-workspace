@@ -25,7 +25,9 @@ What it adds on top of the core:
   `./scripts/check` plus read-only git inspection (`git diff`, `git log`, `git status`). Write
   flags (`git diff --output`), web tools and the subagent tool are denied too — the reviewer
   cannot fetch, spawn, or write. Projects that add MCP tools should deny their `server_*`
-  actions here as well. This is *Enforced* by permissions, not by instruction — narrower than
+  actions here as well. Shell operators (`>`, `;`, `&&`, `|`, backticks, `$(`) are denied for
+  the role agents — the reviewer cannot fetch, spawn, or write, including through chained or
+  redirected commands. This is *Enforced* by permissions, not by instruction — narrower than
   the Claude Code reviewer, which keeps full Bash with an instruction never to write.
 - **Role agents** (`.opencode/agents/`): `analyst`, `developer` and `qa`, alongside the read-only
   `reviewer`. The single-role segment commands pin their agent (`/analyze` → analyst, `/plan` and
@@ -41,7 +43,8 @@ What it adds on top of the core:
 - **Permission denies** (`.opencode/opencode.json`): `git push --force` (including `-f` and
   non-leading spellings such as `git push origin main --force`), `git reset --hard`,
   `git rebase`, and `rm -rf` (plus `-fr` / `-r -f` / `/bin/rm` variants) are blocked by the
-  tool, not by politeness — an unusual spelling falls to the ask profile, a human gate, not a
+  tool, not by politeness — an unusual spelling, or any command containing shell operators
+  (`>`, `;`, `&&`, `|`, backticks, `$(`), falls to the ask profile, a human gate, not a
   silent pass.
 - **Immutability without a hook**: edits to `specs/done/` are rejected by a permission rule
   (`edit` on `specs/done/*` → deny) — the same guarantee as Claude Code's hook, with no script
