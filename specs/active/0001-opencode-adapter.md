@@ -44,6 +44,6 @@ denies).
 ## Definition of Done
 - [ ] `scripts/check` — the template has no `check.conf`; CI skips by design (`check.yml`);
   `./scripts/doctor --strict` exits 0
-- [ ] Independent review done; real findings fixed, noise rejected with written rationale
+- [x] Independent review done; real findings fixed, noise rejected with written rationale (triage confirmed by ertugkececi, 2026-10-09 — `specs/plans/0001-plan.md` §Triage)
 - [ ] Criterion ↔ evidence table complete for CB-* and PB-*
 - [ ] Spec moved to `specs/done/` at ship (on upstream merge; recorded in the fork)
