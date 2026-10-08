@@ -1,5 +1,6 @@
 ---
 description: "Segment VERIFY: acceptance criteria against concrete evidence (QA). Always stops with the table. Usage: /verify <spec number NNNN>"
+agent: qa
 ---
 Read AGENTS.md, docs/roles/qa.md, and workflows/segments.md. Run the VERIFY segment for spec
 $ARGUMENTS. Soft entry check: triage is complete — if no review/triage record exists, say so

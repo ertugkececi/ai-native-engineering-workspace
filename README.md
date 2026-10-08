@@ -121,18 +121,24 @@ Not every rule is held the same way, and not every tool can hold it the same way
 - **Validated** — a script detects a violation (`scripts/doctor` / `scripts/check`, locally and in CI).
 - **Enforced** — the tool physically prevents the action.
 
-| Rule | Claude Code | GitHub Copilot | Cursor | Other tools |
-|---|---|---|---|---|
-| Spec approved before plan | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
-| Plan approval recorded before build | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
-| Who approved the plan | Documented | Documented | Documented | Documented |
-| Producer ≠ verifier | Enforced (reviewer subagent has no Edit/Write; Bash kept for `scripts/check`, instructed never to write) | Enforced (reviewer agent, no edit tools; `runCommands` kept) | Documented (fresh chat) | Documented (fresh session) |
-| Shipped specs immutable | Enforced (hook, editor tools) + Validated (CI) | Documented (instruction) + Validated (CI) | Documented (rule) + Validated (CI) | Validated (CI) |
-| No force-push / hard reset | Enforced (permission deny) | Documented | Documented | Documented |
-| "Done" = `scripts/check` green | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Rule | Claude Code | GitHub Copilot | Cursor | OpenCode | Other tools |
+|---|---|---|---|---|---|
+| Spec approved before plan | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Plan approval recorded before build | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Who approved the plan | Documented | Documented | Documented | Documented | Documented |
+| Producer ≠ verifier | Enforced (reviewer subagent has no Edit/Write; Bash kept for `scripts/check`, instructed never to write) | Enforced (reviewer agent, no edit tools; `runCommands` kept) | Documented (fresh chat) | Enforced (read-only `reviewer` subagent: `edit` denied; `shell` narrowed to `./scripts/check` + read-only git) * | Documented (fresh session) |
+| Role-card prohibitions (Analyst no code, QA no production code) | Documented | Documented | Documented | Enforced (per-agent edit rules: analyst → `specs/active/`, qa → `tests/`) * | Documented |
+| Shipped specs immutable | Enforced (hook, editor tools) + Validated (CI) | Documented (instruction) + Validated (CI) | Documented (rule) + Validated (CI) | Enforced (config rule: `edit` denied under `specs/done/`) + Validated (CI) * | Validated (CI) |
+| No force-push / hard reset | Enforced (permission deny) | Documented | Documented | Enforced (permission denies) * | Documented |
+| "Done" = `scripts/check` green | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
 
 Segment commands also refuse out-of-order work (entry checks) — that is the agent following a
 Documented rule; CI is what makes it Validated.
+
+\* OpenCode matches shell commands by command text; a write hidden inside a command the scanner
+does not recognize is not caught — the CI gate (`scripts/doctor --strict`) and review are the
+backstop, the same caveat as Claude Code's hook. The role agents' edit paths (`specs/active/`,
+`tests/`) are defaults; adjust them to your stack at bootstrap.
 
 "Who approved" is Documented because a line in a file cannot prove identity. The real fix lives
 in the hosting platform, not in this repo: in strict mode, protect the default branch and require

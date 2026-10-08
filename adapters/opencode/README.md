@@ -25,6 +25,16 @@ What it adds on top of the core:
   `./scripts/check` plus read-only git inspection (`git diff`, `git log`, `git status`). This is
   *Enforced* by permissions, not by instruction — narrower than the Claude Code reviewer, which
   keeps full Bash with an instruction never to write.
+- **Role agents** (`.opencode/agents/`): `analyst`, `developer` and `qa`, alongside the read-only
+  `reviewer`. The single-role segment commands pin their agent (`/analyze` → analyst, `/plan` and
+  `/build` → developer, `/verify` → qa), so a role card's "MAY NOT" clauses are enforced by
+  permissions: the Analyst cannot edit outside `specs/active/`, QA cannot edit outside `tests/`
+  (adjust the path for your stack). The chainers (`/new-feature`, `/change`) intentionally run
+  unpinned — they cross roles and must not inherit one role's limits.
+- **Ask profile** (`.opencode/opencode.json`): any shell command outside a narrow allowlist
+  (read-only git, `./scripts/check`, `./scripts/doctor`) asks the human first; approvals can be
+  saved per project. Too loud for solo lite work? Delete the `ask` rule and the allowlist —
+  the denies above stay.
 - **Permission denies** (`.opencode/opencode.json`): `git push --force`, `git push -f`,
   `git reset --hard`, `git rebase` and `rm -rf` are blocked by the tool, not by politeness.
 - **Immutability without a hook**: edits to `specs/done/` are rejected by a permission rule

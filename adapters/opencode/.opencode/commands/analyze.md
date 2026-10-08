@@ -1,5 +1,6 @@
 ---
 description: "Segment ANALYZE: intent → clarify → spec → spec approval. Always stops at the handoff. Usage: /analyze <short feature description>"
+agent: analyst
 ---
 Read AGENTS.md, docs/roles/analyst.md, and workflows/segments.md. Run the ANALYZE segment for:
 $ARGUMENTS

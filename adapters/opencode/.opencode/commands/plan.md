@@ -1,5 +1,6 @@
 ---
 description: "Segment PLAN: plan from an Approved spec → approval recorded in the plan. Always stops. Usage: /plan <spec number NNNN>"
+agent: developer
 ---
 Read AGENTS.md, docs/roles/developer.md, and workflows/segments.md. Run the PLAN segment for
 spec $ARGUMENTS.

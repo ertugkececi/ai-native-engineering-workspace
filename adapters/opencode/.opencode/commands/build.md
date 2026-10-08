@@ -1,5 +1,6 @@
 ---
 description: "Segment BUILD: implement the approved plan → scripts/check green. Always stops with evidence. Usage: /build <spec number NNNN>"
+agent: developer
 ---
 Read AGENTS.md, docs/roles/developer.md, and workflows/segments.md. Run the BUILD segment for
 spec $ARGUMENTS.
