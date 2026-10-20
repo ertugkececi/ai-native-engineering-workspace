@@ -27,6 +27,7 @@ for f in \
   workflows/refactor.md workflows/incident.md workflows/segments.md workflows/change-request.md \
   prompts/README.md prompts/bootstrap.md prompts/clarify.md prompts/spec.md prompts/plan.md \
   prompts/build.md prompts/review.md prompts/verify.md prompts/adr.md prompts/recovery/README.md \
+  docs/commands.md \
   scripts/check
 do
   if [ -f "$ROOT/$f" ]; then :; else fail "missing: $f"; fi
@@ -75,11 +76,18 @@ else
   warn "scripts/check.conf missing — bootstrap generates it; until then './scripts/check' has nothing to run"
 fi
 
+# --- template version: the base an upgrade diffs against (CHANGELOG, "How to upgrade") ---
+if [ -f "$ROOT/.anew-version" ]; then
+  ok "ANEW base version: $(head -n 1 "$ROOT/.anew-version" | tr -d '\r')"
+else
+  warn ".anew-version missing — write the ANEW version this workspace is based on (e.g. v1.13) so upgrades know their base"
+fi
+
 # --- adapter presence ---
-if [ -f "$ROOT/CLAUDE.md" ] || [ -f "$ROOT/.github/copilot-instructions.md" ] || [ -d "$ROOT/.cursor/rules" ] || [ -d "$ROOT/.opencode/commands" ]; then
+if [ -f "$ROOT/CLAUDE.md" ] || [ -f "$ROOT/.github/copilot-instructions.md" ] || [ -d "$ROOT/.cursor/rules" ] || [ -f "$ROOT/.agents/skills/analyze/SKILL.md" ] || [ -d "$ROOT/.opencode/commands" ]; then
   ok "an AI tool adapter is installed"
 else
-  warn "no adapter installed — run ./scripts/init <claude-code|github-copilot|cursor|opencode|generic>"
+  warn "no adapter installed — run ./scripts/init <claude-code|github-copilot|cursor|codex|opencode|generic>"
 fi
 
 # --- spec/plan consistency (state machine: Draft -> Approved -> In progress -> Shipped) ---
@@ -181,9 +189,10 @@ else
   warn "immutability check skipped — not a git repository"
 fi
 
-# --- adapter parity: every Claude Code command has a Cursor and a Copilot counterpart ---
+# --- adapter parity: every Claude Code command has a Cursor, a Copilot and a Codex counterpart ---
 # Runs only where adapters/ exists (the template, and repos that kept it). Missing = FAIL: README
-# promises the same commands in all three tools.
+# promises the same commands in every tool. A Codex skill must also stay explicit-only, or Codex
+# could start a gated stage on its own.
 if [ -d "$ROOT/adapters/claude-code/.claude/commands" ]; then
   parity_fails=0
   for c in "$ROOT/adapters/claude-code/.claude/commands/"*.md; do
@@ -191,8 +200,23 @@ if [ -d "$ROOT/adapters/claude-code/.claude/commands" ]; then
     x=$(basename "$c" .md)
     [ -f "$ROOT/adapters/cursor/commands/$x.md" ] || { fail "adapter parity: $x missing in cursor"; parity_fails=$((parity_fails + 1)); }
     [ -f "$ROOT/adapters/github-copilot/prompts/$x.prompt.md" ] || { fail "adapter parity: $x missing in github-copilot"; parity_fails=$((parity_fails + 1)); }
+    [ -f "$ROOT/adapters/codex/skills/$x/SKILL.md" ] || { fail "adapter parity: $x missing in codex"; parity_fails=$((parity_fails + 1)); }
+    grep -qs "allow_implicit_invocation: false" "$ROOT/adapters/codex/skills/$x/agents/openai.yaml" || [ ! -f "$ROOT/adapters/codex/skills/$x/SKILL.md" ] || { fail "adapter parity: codex skill $x is not explicit-only (agents/openai.yaml)"; parity_fails=$((parity_fails + 1)); }
+    [ -f "$ROOT/adapters/opencode/.opencode/commands/$x.md" ] || { fail "adapter parity: $x missing in opencode"; parity_fails=$((parity_fails + 1)); }
   done
-  [ "$parity_fails" -eq 0 ] && ok "adapter parity: every Claude Code command exists for Cursor and Copilot"
+  [ "$parity_fails" -eq 0 ] && ok "adapter parity: every Claude Code command exists for Cursor, Copilot, Codex and OpenCode"
+  # Command reference (docs/commands.md) has a section for every command and script — a reference
+  # that falls behind the commands is worse than none.
+  ref_fails=0
+  for c in "$ROOT/adapters/claude-code/.claude/commands/"*.md; do
+    [ -f "$c" ] || continue
+    x=/$(basename "$c" .md)
+    grep -qF "### \`$x\`" "$ROOT/docs/commands.md" 2>/dev/null || { fail "command reference out of date: $x missing from docs/commands.md"; ref_fails=$((ref_fails + 1)); }
+  done
+  for s in init doctor check residue selftest; do
+    grep -qF "### \`scripts/$s\`" "$ROOT/docs/commands.md" 2>/dev/null || { fail "command reference out of date: scripts/$s missing from docs/commands.md"; ref_fails=$((ref_fails + 1)); }
+  done
+  [ "$ref_fails" -eq 0 ] && ok "command reference covers every command (docs/commands.md)"
 fi
 
 # --- hygiene ---
@@ -200,6 +224,17 @@ if [ -d "$ROOT/.claude/hooks" ]; then
   for h in "$ROOT/.claude/hooks/"*.sh; do
     [ -f "$h" ] && [ ! -x "$h" ] && warn "hook not executable: ${h#"$ROOT"/} (chmod +x it)"
   done
+fi
+
+# --- fast output cited as evidence (docs/testing.md, Two speeds rule 2): every mode, WARN ---
+# Fast green is a working state; only full green is evidence. Shipped specs, and in CI the pull
+# request description from the event payload ($GITHUB_EVENT_PATH — read locally, no network).
+fast_only() { grep -qF 'CHECK GREEN (fast,' "$1" && ! grep -qF 'CHECK GREEN (full,' "$1"; }
+for s in "$ROOT"/specs/done/*.md; do
+  [ -f "$s" ] && fast_only "$s" && warn "fast output cited as evidence: ${s#"$ROOT"/} shows CHECK GREEN (fast, …) and no (full, …)"
+done
+if [ -f "${GITHUB_EVENT_PATH:-}" ] && grep -q '"pull_request"' "$GITHUB_EVENT_PATH" && fast_only "$GITHUB_EVENT_PATH"; then
+  warn "fast output cited as evidence: the pull request description shows CHECK GREEN (fast, …) and no (full, …)"
 fi
 
 # --- evidence hygiene (docs/testing.md Evidence policy): path checks only, every mode, WARN ---

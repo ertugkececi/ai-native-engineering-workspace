@@ -50,11 +50,35 @@ A screenshot proves a criterion only against the spec's "User experience": every
    more often than humans; per-run residue compounds into machine starvation.
 2. **The residue test** (the rule's definition, not advice): run `./scripts/check` twice back to
    back; after each run, process count and memory return to the baseline measured before the first.
+   `./scripts/residue` runs it (`--fast` for the fast profile) and names every survivor with its
+   command line; it lists anything started meanwhile too, so run it on an otherwise idle machine.
+   Rerun it whenever `scripts/check.conf` changes.
 3. Warm-process caches trade memory for speed for humans who build rarely; with an agent, trade the
    seconds back for a flat memory profile.
 4. Interactive modes (watchers, dev servers, REPLs) never belong in check. e2e runs single-worker
    and headless by default; one component owns the app-under-test lifecycle — started for the run,
    stopped at the end, including on failure and timeout.
+
+## Two speeds, one contract
+1. `./scripts/check` is still the one way to ask "is this good?"; `--fast` is a speed of the
+   contract, not a second contract.
+2. **Fast green is a working state; only full green is evidence.** Per step, per finding, per
+   iteration → `--fast`. Segment exits, PROVE steps, recovery-ramp exits, the verify table and CI
+   → `CHECK GREEN (full, …)`. `scripts/doctor` warns when a shipped spec, or in CI the pull
+   request description, shows `CHECK GREEN (fast, …)` and no `(full, …)`.
+3. Fast: compile and the quick tests (unit, lint). Full only: e2e, long integration suites, and
+   any single step over ~a minute — the minute is a per-step threshold, not a total for the fast
+   profile; fast has no fixed total. Bootstrap decides per stack and tags the steps `[fast]` in
+   check.conf. When fast grows too long to iterate with, take steps out in this order: lint
+   first, then formatting, then unit tests; compilation stays longest.
+4. **Split a test step by a selector, never by a list.** The fast step selects with a filter
+   (a category, trait, tag or namespace) and the full-only step runs the same filter inverted,
+   so "fast ∪ the rest = every test" holds by construction: a test added later still runs in
+   one of them. Splitting by naming projects or files leaves a silent hole — a new one that is
+   not added to check.conf runs in neither profile while check stays green.
+5. Durations come from check itself (`<== <step> (n s)` per step, the total in the green line).
+   Decide a split, or report a profile's duration, on the median of at least 3 runs — single
+   runs vary too much to decide on.
 
 ## Determinism
 Flaky tests are fixed, not retried or skipped — see R-03. Evidence of a fix: 5 consecutive green runs.

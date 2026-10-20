@@ -5,9 +5,12 @@
 > It doesn't matter what you're building. ANEW gives you a starting environment where context,
 > decisions, specs, roles, quality gates, and verification are managed in files — not lost in chat.
 
+**New here?** The [command reference](docs/commands.md) shows every command, where it stops, and how
+lite and strict differ — one page.
+
 Use this repo as a GitHub template (or drop it into an existing project), install the adapter for
 your AI tool, run the bootstrap workflow, and start your first feature. No frameworks, no
-dependencies, no code generators — a working *system*, written in Markdown plus three small scripts.
+dependencies, no code generators — a working *system*, written in Markdown plus a few small POSIX scripts.
 
 ## Why this exists
 
@@ -36,17 +39,17 @@ Every file in ANEW connects to one of these channels — plus one more thing pro
 | Layer | What | Ages with |
 |---|---|---|
 | **Core** (`docs/`, `specs/`, `workflows/`, `prompts/`, `scripts/`, `AGENTS.md`) | The system: context, specs, ADRs, roles, gates, verification, recovery. 100% tool- and stack-agnostic. | Engineering practice (slowly) |
-| **Adapters** (`adapters/`) | Thin per-tool wiring: Claude Code, GitHub Copilot, Cursor, OpenCode, generic. Pointers + tool-specific extras only — rules are never duplicated here. | AI tools (they change; core doesn't) |
+| **Adapters** (`adapters/`) | Thin per-tool wiring: Claude Code, GitHub Copilot, Cursor, Codex, OpenCode, generic. Pointers + tool-specific extras only — rules are never duplicated here. | AI tools (they change; core doesn't) |
 | **Packs** (roadmap) | Optional stack presets (JVM/Spring, Node, Python, React): conventions/testing/CI suggestions. Not in v1 — the core works without them. | Ecosystems |
 
 ## Quickstart
 
 ```bash
 # 1. Use this template on GitHub (or copy the files into an existing repo), then:
-./scripts/init claude-code        # or: github-copilot | cursor | opencode | generic
+./scripts/init claude-code        # or: github-copilot | cursor | codex | opencode | generic
 
 # 2. Open your AI tool and run the bootstrap workflow
-#    Claude Code / Cursor / Copilot / OpenCode:  /bootstrap
+#    Claude Code / Cursor / Copilot / OpenCode:  /bootstrap    Codex:  $bootstrap
 #    Other tools:  paste prompts/bootstrap.md
 
 # 3. The AI first asks two things: interview language and document language (recorded in
@@ -55,7 +58,8 @@ Every file in ANEW connects to one of these channels — plus one more thing pro
 
 ./scripts/doctor                  # 4. Confirm the workspace is healthy
 
-# 5. Start your first feature (Claude Code, Cursor, Copilot and OpenCode share the same commands)
+# 5. Start your first feature (Claude Code, Cursor, Copilot and OpenCode share the same commands;
+#    in Codex they are skills, typed with $ instead of /: $new-feature, $analyze, ...)
 #    lite mode:     /new-feature "short description"    # chains the segments, asks at each gate
 #    strict mode:   /analyze "short description"        # one segment per role, one role per session
 #    existing behavior must change:  /change "<request> <work item>"
@@ -93,10 +97,10 @@ Each stage is a *segment* with an entry condition and a handoff written to files
 | `/review <NNNN>` | Independent review — read-only where the tool supports it (see "How strongly is each rule held?") | Findings report → human triage |
 | `/verify <NNNN>` | QA: criterion ↔ evidence table | Table → human ship |
 | `/change "<request> <work item>"` | Change an existing behavior: triage rubric (bug → `/fix-bug` · trivial → one commit per `docs/git.md` policy · change → mini-spec lane), then the lane by mode (`workflows/change-request.md`) | Triage verdict; then the lane's gates |
-| `/bootstrap` · `/fix-bug` · `/refactor` · `/adr` · `/recover` | Other workflows — same commands in Claude Code, Cursor, Copilot and OpenCode; any other tool pastes the prompts | Their gates |
+| `/bootstrap` · `/fix-bug` · `/refactor` · `/adr` · `/recover` | Other workflows — same commands in Claude Code, Cursor, Copilot, Codex and OpenCode; any other tool pastes the prompts | Their gates |
 
 Claude Code, Cursor and OpenCode expose these as slash commands, GitHub Copilot as prompt files,
-and any other tool by pasting the prompts (`adapters/generic/README.md`). CI runs `scripts/doctor --strict`,
+Codex as
 so the spec/plan gates hold whichever tool produced the PR.
 
 ### Two operating modes
@@ -121,16 +125,20 @@ Not every rule is held the same way, and not every tool can hold it the same way
 - **Validated** — a script detects a violation (`scripts/doctor` / `scripts/check`, locally and in CI).
 - **Enforced** — the tool physically prevents the action.
 
-| Rule | Claude Code | GitHub Copilot | Cursor | OpenCode | Other tools |
+| Rule | Claude Code | GitHub Copilot | Cursor | Codex | OpenCode | Other tools |
 |---|---|---|---|---|---|
-| Spec approved before plan | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
-| Plan approval recorded before build | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
-| Who approved the plan | Documented | Documented | Documented | Documented | Documented |
-| Producer ≠ verifier | Enforced (reviewer subagent has no Edit/Write; Bash kept for `scripts/check`, instructed never to write) | Enforced (reviewer agent, no edit tools; `runCommands` kept) | Documented (fresh chat) | Enforced (read-only `reviewer` subagent: `edit` denied; `shell` narrowed to `./scripts/check` + read-only git) * | Documented (fresh session) |
-| Role-card prohibitions (Analyst no code, QA no production code) | Documented | Documented | Documented | Enforced (per-agent edit rules: analyst → `specs/active/`, qa → `tests/`) * | Documented |
-| Shipped specs immutable | Enforced (hook, editor tools) + Validated (CI) | Documented (instruction) + Validated (CI) | Documented (rule) + Validated (CI) | Enforced (config rule: `edit` denied under `specs/done/`) + Validated (CI) * | Validated (CI) |
-| No force-push / hard reset | Enforced (permission deny) | Documented | Documented | Enforced (permission denies; unusual spellings fall to the human ask) * | Documented |
-| "Done" = `scripts/check` green | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Spec approved before plan | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Plan approval recorded before build | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Who approved the plan | Documented | Documented | Documented | Documented | Documented | Documented |
+| Producer ≠ verifier | Enforced (reviewer subagent has no Edit/Write; Bash kept for `scripts/check`, instructed never to write) | Enforced (reviewer agent, no edit tools; `runCommands` kept) | Documented (fresh chat) | Documented (fresh session) | Enforced (read-only `reviewer` subagent: `edit` denied; `shell` narrowed to `./scripts/check` + read-only git) * | Documented (fresh session) |
+| Role-card prohibitions (Analyst no code, QA no production code) | Documented | Documented | Documented | Documented | Enforced (per-agent edit rules: analyst → `specs/active/`, qa → `tests/`) * | Documented |
+| Shipped specs immutable | Enforced (hook, editor tools) + Validated (CI) | Documented (instruction) + Validated (CI) | Documented (rule) + Validated (CI) | Validated (CI) | Enforced (config rule: `edit` denied under `specs/done/`) + Validated (CI) * | Validated (CI) |
+| No force-push / hard reset | Enforced (permission deny) | Documented | Documented | Documented | Enforced (permission denies; unusual spellings fall to the human ask) * | Documented |
+| "Done" = `scripts/check` green | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) | Validated (CI) |
+| Evidence is referenced, not stored (no `evidence/`, no repo clone inside the repo) | Validated (doctor warns, every mode) | Validated (doctor warns, every mode) | Validated (doctor warns, every mode) | Validated (doctor warns, every mode) | Validated (doctor warns, every mode) | Validated (doctor warns, every mode) |
+| `scripts/check` leaves nothing running | Documented (the residue test, `scripts/residue`, runs at bootstrap — not in CI) | Documented (same) | Documented (same) | Documented (same) | Documented (same) | Documented (same) |
+| UI specs define flow, states and the design link | Documented | Documented | Documented | Documented | Documented | Documented |
+| Evidence cites the full profile, not `--fast` | Validated (doctor warns: shipped specs, and the PR description in CI) | Validated (same) | Validated (same) | Validated (same) | Validated (same) | Validated (same) |
 
 Segment commands also refuse out-of-order work (entry checks) — that is the agent following a
 Documented rule; CI is what makes it Validated.
@@ -155,17 +163,20 @@ branch protection setting makes "no force-push" Enforced for every tool.
 |---|---|
 | `AGENTS.md` | The signpost every agent auto-loads: invariant rules, operating mode, where everything lives. Rewritten by bootstrap; invariants survive. |
 | `docs/` | Long-term memory: architecture, domain language, conventions, testing, security, git rules — templates filled at bootstrap. |
-| `docs/decisions/` | ADRs — decisions with rationale, so "why" survives the people and the sessions. ANEW's own design decisions are recorded there (0001–0003). |
+| `docs/decisions/` | ADRs — decisions with rationale, so "why" survives the people and the sessions. The project's own decisions number from 0001; ANEW's design decisions live in `docs/decisions/anew/` (ANEW-0001 onward), so upgrades never collide with them. |
 | `docs/roles/` | Role cards bound to responsibility, not technology: analyst, developer, reviewer, QA. Producer and verifier are never the same session. |
 | `specs/` | One spec per piece of work: intent, behavior, testable acceptance criteria (`TEMPLATE-mini.md` for behavior changes: changed + preserved criteria). `active/` → `done/` (immutable once shipped). Plans live in `specs/plans/`. |
 | `workflows/` | The processes: bootstrap, feature-development, change-request, bug-fix, refactor, incident. Steps, roles, gates, evidence — each step points to its prompt. `segments.md` defines the feature stages as stop-at-handoff segments that every adapter maps onto. |
 | `prompts/` | Reusable prompt bodies with placeholders. `prompts/recovery/` is the catalog of safe ramps (R-01…R-12) for when things go wrong. |
 | `adapters/` | Per-tool wiring. `scripts/init <tool>` installs one. |
-| `scripts/check` | The single verification contract: humans, agents, hooks, and CI all run this one command. Stack-specific internals live in `check.conf`, written at bootstrap. |
-| `scripts/doctor` | Workspace health: structure, configuration state, adapter presence, spec/plan gate consistency (`--strict` in CI). |
+| `scripts/check` | The single verification contract: humans, agents, hooks, and CI all run this one command. Stack-specific internals live in `check.conf`, written at bootstrap. `--fast` runs only the steps tagged `[fast]` for the inner loop; only the full run is evidence. Reports each step's duration and the total. |
+| `scripts/doctor` | Workspace health: structure, configuration state, adapter presence, spec/plan gate consistency (`--strict` in CI), evidence hygiene warnings. |
+| `scripts/residue` | The residue test (`docs/testing.md`, Resource hygiene): runs check twice and names every process or memory drop that outlives a run. Bootstrap runs it for both profiles; rerun it whenever check.conf changes. |
+| `scripts/selftest` | Proves `scripts/check`, `scripts/doctor` and `scripts/residue` behave as documented: every scenario in a throwaway copy outside the repo. Runs in CI. |
 | `scripts/init` | Installs an adapter; keeps existing files unless `--force`. |
 | `CHANGELOG.md` | What changed between versions of the workspace, for template users upgrading their copy. |
-| `.github/` | CI that runs the same `scripts/check` and `scripts/doctor --strict` + a PR template mirroring the gates. |
+| `.anew-version` | The ANEW version this workspace is based on — the starting point of every upgrade (CHANGELOG, "How to upgrade"). `scripts/doctor` prints it. |
+| `.github/` | CI that runs the same `scripts/check`, `scripts/doctor --strict` and `scripts/selftest` + a PR template mirroring the gates. |
 
 ## Design principles
 
@@ -181,13 +192,15 @@ a different sentence.
 subagent) that sees the diff and the spec — not the builder's rationalizations.
 
 **Evidence over claims.** "Done" means `scripts/check` is green and every acceptance criterion maps
-to a test or a reproducible observation. "It works" is not a status.
+to a test or a reproducible observation. "It works" is not a status. Evidence is a pointer (test
+name + command), never a filed copy of output.
 
 **Proposal rule.** Every question, option, or finding an agent raises must include its own
 recommendation and rationale. The human decides — faster, with the agent's reasoning visible.
 
 **One verification contract.** There is exactly one way to ask "is this good?": `scripts/check`.
-The agent cannot pass locally and fail in CI by running different commands.
+The agent cannot pass locally and fail in CI by running different commands. It has two speeds —
+`--fast` to iterate, the full run as the only evidence — but never two contracts.
 
 ## Scope
 
@@ -207,13 +220,6 @@ Everything is plain Markdown and POSIX shell — edit, don't fork the philosophy
   for the interview and document languages first and records them in `AGENTS.md`. Protocol fields
   (`Status:` values, `Approved by / on:`) stay English so the gates keep working.
 - Want stack presets? That's the packs layer — coming after v1 proves the core.
-
-## Origin
-
-ANEW distills the methodology behind the course *AI-Native Software Engineering* by
-[Engin Demiroğ](https://www.udemy.com/user/engindemirog/) — where the full discipline is taught by
-building a production system from an empty folder. The workspace is the system; the course is the
-mastery of it.
 
 ## License
 

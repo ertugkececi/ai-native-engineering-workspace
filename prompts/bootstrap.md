@@ -17,9 +17,9 @@ Read AGENTS.md and workflows/bootstrap.md. We are adapting this workspace to a r
    question (proposal rule):
    product & goal · domain terms and business rules · architecture style & module boundaries ·
    forbidden dependencies · conventions (data rules, error handling, naming) · testing
-   expectations · security posture · git rules · trivial-change policy ("what do label/typo-level
-   changes require?" — (1) PR + one reviewer, no spec [recommend this: cheap safety net];
-   (2) direct commit allowed on a trivial branch; (3) everything goes through a mini-spec
+   expectations (UI work: the e2e tool, and who owns the app-under-test lifecycle) · security
+   posture · git rules · trivial-change policy ("what do label/typo-level changes require?" —
+   (1) PR + one reviewer, no spec [recommend this: cheap safety net]; (2) direct commit allowed on a trivial branch; (3) everything goes through a mini-spec
    [strictest]; write the answer to docs/git.md "Trivial changes") · operating mode (lite or
    strict — recommend one based on team size and risk).
 3. GENERATE from my answers: fill every template in docs/ (architecture, domain, conventions,
@@ -36,14 +36,20 @@ Read AGENTS.md and workflows/bootstrap.md. We are adapting this workspace to a r
       keeping its exit code (check fails fast; a separate last step is skipped on red):
       test: sh -c 'tool run; rc=$?; tool stop; exit $rc'
       (Worked examples only, not a supported list: Gradle --no-daemon · Playwright --workers=1.)
-   c. Prove — in VERIFY, run the residue test and report it at the gate. A bootstrap whose check
-      fails the residue test is not done. Also confirm every test step still runs the same number
-      of tests as before the switches: some runners forward unknown flags to the test process and
-      silently run zero tests.
-   Adoption (existing code): changing build flags the team relies on is PROPOSED, not imposed;
-   the residue test runs either way so the trade-off is visible.
+   c. Prove — in VERIFY, run the residue test (./scripts/residue, then ./scripts/residue --fast)
+      and report it at the gate. A bootstrap whose check fails the residue test is not done.
+      Also confirm every test step still runs the same number of tests as before the switches:
+      some runners forward unknown flags to the test process and silently run zero tests.
+   d. Split — tag the quick steps [fast] in their name, leave e2e and long suites full-only
+      (docs/testing.md, Two speeds, one contract); split a test step by a selector, never by a
+      list (rule 4). Report each profile's duration at the gate — the median of at least 3 runs,
+      from check's own timings (rule 5). The residue test and the test-count check in (c) apply
+      to BOTH profiles.
+   Adoption (existing code): changing build flags the team relies on, and the fast/full split, are
+   PROPOSED, not imposed; the residue test runs either way so the trade-off is visible.
 4. VERIFY: run ./scripts/doctor and ./scripts/check and show me the output; then the residue test
-   (3c) with its baseline and both post-run measurements.
+   (3c: ./scripts/residue and ./scripts/residue --fast) with its baseline and both post-run
+   measurements.
 5. REPORT: what you generated, what you assumed, and every open question that still needs my
    decision — with your recommendations. End with the first command for the mode you set:
    lite → Next: /new-feature "<feature>" (it chains the segments and asks at each gate);
